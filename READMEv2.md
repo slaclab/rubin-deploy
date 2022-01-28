@@ -44,6 +44,57 @@ Vault:
   vault kv put secret/rubin/rubin-data-dev.slac.stanford.edu/installer argocd.admin.plaintext_password=<ARGO_ADMIN_PASSWORD>
   ```
 
+
+Generate passwords
+---
+
+0. pip3 install --upgrade --user pip
+1. pip3 install --user bcrypt cryptography pyyaml onepassword
+2. run generate
+  ```
+  ❯ ./generate_secrets.py usdfdev
+[pull-secret .dockerconfigjson] (.docker/config.json to pull images)
+Current contents:
+
+New filename with contents (empty to not change):
+[butler-secret aws-credentials.ini] (AWS credentials for butler)
+Current contents:
+
+New filename with contents (empty to not change):
+[butler-secret postgres-credentials.txt] (Postgres credentials for butler)
+Current contents:
+
+New filename with contents (empty to not change):
+[tap slack_webhook_url] (slack webhook url for querymonkey): [current: ]
+[tap google_creds.json] (file containing google service account credentials)
+Current contents:
+
+New filename with contents (empty to not change):
+[mobu ALERT_HOOK] (Slack webhook for reporting mobu alerts.  Or use None for no alerting.): [current: ]
+[gafaelfawr cloudsql] (Use CloudSQL? (y/n):): [current: ] n
+[gafaelfawr auth_type] (Use cilogon or github?): [current: ] github
+[gafaelfawr github-client-secret] (GitHub client secret): [current: ]
+[installer argocd.admin.plaintext_password] (Admin password for ArgoCD?): [current: ] rubin1
+[argocd dex.clientSecret] (OAuth client secret for ArgoCD (either GitHub or Google)?): [current: ] GitHub
+[cert-manager enabled] (Use cert-manager? (y/n):): [current: ] n
+[ingress-nginx tls.key] (Certificate private key)
+Current contents:
+
+New filename with contents (empty to not change):
+[ingress-nginx tls.crt] (Certificate chain)
+Current contents:
+
+New filename with contents (empty to not change):
+```
+
+This will generate files under the `secrets` folder.
+
+
+2. export VAULT_PATH=secret/rubin/rubin-data-dev.slac.stanford.edu
+
+3. ./write_secrets.sh usdfdev
+
+
 ---
 ### Deployment
 1. Fork `phalanx` from https://github.com/lsst-sqre/phalanx
@@ -161,8 +212,18 @@ Vault:
 
 9. Run install script with site name and Vault approle `secret_id`:
     ```
-    $ ./install.sh usdfdev <SECRET_ID>
+    $ ./install.sh usdfdev auth/approle/role/rubin-data-dev.slac.stanford.edu/role-id <SECRET_ID>
     ```
+
+    the argo-repo-server pod needs to be on a node that can reach out to the internet (github).
+
+    default of using git doens' twork for me, changed argocd app create to 
+
+    ```
+    argocd app create science-platform --repo https://github.com/yee379/phalanx.git --path science-platform --dest-namespace default --dest-server https://kubernetes.default.svc --upsert --revision master --port-forward --port-forward-namespace argocd --helm-set repoURL=https://github.com/yee379/phalanx.git --helm-set revision=master --values values-usdfdev.yaml
+    ```
+
+
 
 10. Create PersistentVolume for `Nublado2` JupyterHub:
     * Create yaml file `pv-jupyterhub-pod.yaml`:
