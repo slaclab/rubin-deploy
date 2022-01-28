@@ -1,6 +1,89 @@
 # rubin-deploy
 
-Deployment notes and guide for USDF
+Deployment notes and guide for USDF.
+
+## Rubin Science Platform
+
+The RSP is a jupyter notebook based user frontend system that allows users to analyse astronomical data. The RSP is ran on top of kubernetes.
+
+The deployment engine is based upon argocd and utilises a hashicorp vault instance for password management. The deployment repo is called phalanx and consists of 'value' yaml files for each environment that provides site local overrides for the RSP.
+
+SLAC currently maintains one environment for RSP:
+
+- Staff RSP Dev: a development deployment of the RSP for Rubin Staff
+
+TODO: probably want to rename usdfdev to usdf-staff-dev
+
+### Pre-reqs
+
+Secrets need to be generate for the system. A convenience script is provided under `phalanx/installer` directory.
+
+```
+❯ ./generate_secrets.py  usdf-staff-dev --regenerate
+[pull-secret .dockerconfigjson] (.docker/config.json to pull images)
+Current contents:
+
+New filename with contents (empty to not change):
+{}
+[butler-secret aws-credentials.ini] (AWS credentials for butler)
+Current contents:
+
+New filename with contents (empty to not change):
+{}
+[butler-secret butler-gcs-idf-creds.json] (Google credentials for butler)
+Current contents:
+
+New filename with contents (empty to not change):
+{}
+[butler-secret postgres-credentials.txt] (Postgres credentials for butler)
+Current contents:
+
+New filename with contents (empty to not change):
+{}
+[tap google_creds.json] (file containing google service account credentials)
+Current contents:
+
+New filename with contents (empty to not change):
+{}
+[mobu ALERT_HOOK] (Slack webhook for reporting mobu alerts.  Or use None for no alerting.): [current: ]
+[gafaelfawr cloudsql] (Use CloudSQL? (y/n):): [current: ] n
+[gafaelfawr auth_type] (Use cilogon or github?): [current: ] github
+[gafaelfawr github-client-secret] (GitHub client secret): [current: ] TBD
+[installer argocd.admin.plaintext_password] (Admin password for ArgoCD?): [current: ] TBD
+[argocd dex.clientSecret] (OAuth client secret for ArgoCD (either GitHub or Google)?): [current: ] GitHub
+[vo-cutouts cloudsql] (Use CloudSQL? (y/n):): [current: ] n
+[cert-manager enabled] (Use cert-manager? (y/n):): [current: ] n
+[ingress-nginx tls.key] (Certificate private key)
+Current contents:
+
+New filename with contents (empty to not change):
+{}
+[ingress-nginx tls.crt] (Certificate chain)
+Current contents:
+
+New filename with contents (empty to not change):
+{}
+```
+
+This will create a folder `secrets` in the directory.
+
+In order to update the passwords into hashicopr vault, you must first obtain a token using
+
+```
+VAULT_ADDR=http://vault.slac.stanford.edu  vault login
+```
+
+Then push all the passwords to the appropriate location:
+
+```
+VAULT_PATH=secret/rubin/usdf-staffrsp-dev ./write_secrets.sh usdf-staffrsp-dev
+```
+
+
+
+
+
+
 
 # Deploy RSP using phalanx
 
