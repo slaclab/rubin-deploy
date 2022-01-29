@@ -64,7 +64,6 @@ Current contents:
 New filename with contents (empty to not change):
 {}
 ```
-
 This will create a folder `secrets` in the directory.
 
 In order to update the passwords into hashicopr vault, you must first obtain a token using
@@ -80,12 +79,56 @@ VAULT_PATH=secret/rubin/usdf-staffrsp-dev ./write_secrets.sh usdf-staffrsp-dev
 ```
 
 
+### Deploy RSP using phalanx
+
+In order to actually install the RSP, we can use the phalanx/installer/install.sh script. We have a local fork of the phalanx repo with some modifications (that is part of the submodule git import).
+
+One such change is to use a vault role for the deployment.
+
+You can create a new approle in vault (assuming you have appropriate privileges), but running
+
+```
+$ vault auth enable approle
+$ vault write auth/approle/role/rubin-usdf-staffrsp-dev \
+      secret_id_ttl=60m \
+      token_num_uses=10 \
+      token_ttl=20m \
+      token_max_ttl=30m \
+      secret_id_num_uses=40 \
+      policies=rubin
+```
+We then need to get the secret_id for this approle in preparation for the install script:
+
+```
+❯ vault read auth/approle/role/rubin-usdf-staffrsp-dev/role-id
+Key        Value
+---        -----
+role_id    <ROLE-ID>
+```
+
+Then we need to generate a secret_id from this role_id
+
+```
+❯ vault write -f auth/approle/role/rubin-usdf-staffrsp-dev/secret-id
+Key                   Value
+---                   -----
+secret_id             <SECRET-ID>
+secret_id_accessor    992e5e2c-f09d-806a-006c-f22aa482c12d
+secret_id_ttl         1h
+```
+
+Using the above role-id and secret-id, we can instigate the install script:
+
+```
+❯ ./install.sh usdfdev auth/approle/role/rubin-usdf-staffrsp-dev <SECRET-ID>
+```
 
 
 
 
 
-# Deploy RSP using phalanx
+
+
 
 - Forked https://github.com/lsst-sqre/phalanx to https://github.com/yee379/phalanx.
 - Create new branch: `git checkout -b slac-initial-deploy`
