@@ -1,6 +1,7 @@
 k ?= kubectl
 
-
+init:
+	git submodule foreach git pull origin master
 
 clean:
 	$(k) delete ns -R vault-secrets-operator || true
