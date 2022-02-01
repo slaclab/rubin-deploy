@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: postgres-physpvc
+  name: neb0008-postgres-physpvc
 spec:
   capacity:
     storage: 100Gi
@@ -9,7 +9,7 @@ spec:
   accessModes:
   - ReadWriteOnce
   persistentVolumeReclaimPolicy: Delete
-  storageClassName: neb0004-local-gafaelfawr
+  storageClassName: neb0008-local-gafaelfawr
   claimRef:
     namespace: postgres
     name: postgres-physpvc
@@ -22,5 +22,5 @@ spec:
         - key: kubernetes.io/hostname
           operator: In
           values:
-          - neb0004.slac.stanford.edu
+          - neb0008.slac.stanford.edu
 
